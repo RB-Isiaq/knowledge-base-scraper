@@ -149,3 +149,24 @@ export function validatePdfUpload(
 
   next();
 }
+
+export function pdfUploadMiddleware(req: any, res: any, next: any) {
+  // Check if we're on Vercel and file size
+  if (process.env.VERCEL_ENV === "production" && req.files?.pdf) {
+    const maxSize = 4.5 * 1024 * 1024; // 4.5MB for Vercel Hobby
+    if (req.files.pdf.size > maxSize) {
+      res.status(413).json({
+        error: "File too large",
+        message: `PDF file must be smaller than 4.5MB on Vercel Hobby plan. Your file is ${(
+          req.files.pdf.size /
+          1024 /
+          1024
+        ).toFixed(1)}MB.`,
+        details:
+          "Consider compressing your PDF or upgrading to Vercel Pro for larger file support.",
+      });
+      return;
+    }
+  }
+  next();
+}

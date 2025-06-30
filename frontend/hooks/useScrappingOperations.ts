@@ -30,7 +30,10 @@ export function useScrapingOperations({
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(
+          errorData.message || `HTTP error! status: ${response.status}`
+        );
       }
 
       const data = await response.json();
@@ -59,13 +62,34 @@ export function useScrapingOperations({
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json();
+
+        if (response.status === 413) {
+          throw new Error(
+            errorData.message ||
+              "File too large. Please use a PDF smaller than 4.5MB."
+          );
+        }
+
+        if (response.status === 408) {
+          throw new Error(
+            errorData.message || "Processing timeout. Try a smaller PDF."
+          );
+        }
+
+        throw new Error(
+          errorData.message || `HTTP error! status: ${response.status}`
+        );
       }
 
       const data = await response.json();
       setResults(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "An error occurred while processing the PDF";
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -90,7 +114,10 @@ export function useScrapingOperations({
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(
+          errorData.message || `HTTP error! status: ${response.status}`
+        );
       }
 
       const data = await response.json();

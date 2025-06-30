@@ -207,7 +207,7 @@ export async function scrapeBulkUrls(
   };
 }
 
-export async function processPdf(
+export async function processPDF(
   pdfBuffer: Buffer,
   filename: string,
   teamId: string,
@@ -215,16 +215,42 @@ export async function processPdf(
 ): Promise<ScrapedData> {
   try {
     console.log(`📚 Processing PDF: ${filename}`);
-    const data = await pdf(pdfBuffer);
+    
+    // Add timeout to PDF parsing
+    const parsePromise = pdf(pdfBuffer, {
+      // Optimize for Vercel's constraints
+      max: 0, // No page limit
+      version: "v1.10.100", // Use specific version for consistency
+    });
+
+    // Add 45-second timeout (Vercel has 60s max)
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(
+        () => reject(new Error("PDF parsing timeout after 45 seconds")),
+        45000
+      );
+    });
+
+    const data = (await Promise.race([parsePromise, timeoutPromise])) as any;
     const fullText = data.text;
 
     console.log(
       `📄 PDF contains ${data.numpages} pages, ${fullText.length} characters`
     );
 
+    if (!fullText || fullText.length < 50) {
+      throw new Error(
+        "PDF appears to be empty or contains no extractable text"
+      );
+    }
+
     // Split into chapters/sections
     const chunks = chunkPDFContent(fullText, filename);
     console.log(`📑 Split PDF into ${chunks.length} chunks`);
+
+    if (chunks.length === 0) {
+      throw new Error("No content could be extracted from the PDF");
+    }
 
     const items: ScrapedItem[] = chunks.map((chunk, index) => ({
       title: chunk.title || `${filename} - Section ${index + 1}`,
@@ -241,6 +267,23 @@ export async function processPdf(
     };
   } catch (error) {
     console.error("❌ PDF processing error:", error);
+
+    if (error instanceof Error) {
+      if (error.message.includes("timeout")) {
+        throw new Error(
+          "PDF processing timed out. The file may be too complex or large."
+        );
+      }
+      if (error.message.includes("Invalid PDF")) {
+        throw new Error(
+          "The uploaded file is not a valid PDF or is corrupted."
+        );
+      }
+      if (error.message.includes("encrypted")) {
+        throw new Error("Password-protected PDFs are not supported.");
+      }
+    }
+
     throw error;
   }
 }

@@ -9,7 +9,11 @@
     "dev": "nodemon",
     "clean": "rm -rf dist"
   },
-  "keywords": [],
+  "keywords": [
+    "web-scraper",
+    "api",
+    "content-extraction"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs",

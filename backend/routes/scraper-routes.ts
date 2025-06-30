@@ -4,6 +4,7 @@ import {
   validateScrapeUrl,
   validateBulkScrape,
   validatePdfUpload,
+  pdfUploadMiddleware,
 } from "../middleware/validation";
 
 const router = Router();
@@ -178,6 +179,7 @@ router.post(
  */
 router.post(
   "/scrape-pdf",
+  pdfUploadMiddleware,
   validatePdfUpload,
   scraperController.scrapePdf.bind(scraperController)
 );
