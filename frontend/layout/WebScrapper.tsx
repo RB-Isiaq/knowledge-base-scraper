@@ -20,7 +20,7 @@ export function WebScraperLayout() {
   });
 
   return (
-    <div className="container mx-auto p-6 max-w-6xl">
+    <div className="container mx-auto md:p-6 p-3 max-w-6xl">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Knowledge Base Scraper</h1>
         <p className="text-gray-600">

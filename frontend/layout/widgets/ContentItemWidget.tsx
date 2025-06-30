@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MarkdownRenderer } from "@/components/markdown/MarkdownRenderer";
 import { CopyButton } from "@/components/button/copyButton";
-import { ExternalLink, User, Eye, EyeOff } from "lucide-react";
+import { ExternalLink, User, Expand, Minimize } from "lucide-react";
 import { ScrapedItem } from "@/interface";
 
 interface ContentItemWidgetProps {
@@ -22,7 +22,7 @@ export function ContentItemWidget({ item }: ContentItemWidgetProps) {
   const shouldShowExpand = item.content.length > 500;
 
   return (
-    <Card className="border-l-4 border-l-blue-500">
+    <Card className="border-l-2 md:border-l-4 border-l-blue-500">
       <CardContent className="pt-6">
         <div className="space-y-4">
           {/* Header */}
@@ -42,12 +42,6 @@ export function ContentItemWidget({ item }: ContentItemWidgetProps) {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <CopyButton
-                text={item.content}
-                label="Copy Content"
-                variant="outline"
-                size="sm"
-              />
               {shouldShowExpand && (
                 <Button
                   variant="ghost"
@@ -56,17 +50,24 @@ export function ContentItemWidget({ item }: ContentItemWidgetProps) {
                 >
                   {isExpanded ? (
                     <>
-                      <EyeOff className="h-4 w-4 mr-1" />
+                      <Minimize className="h-4 w-4 mr-1" />
                       Collapse
                     </>
                   ) : (
                     <>
-                      <Eye className="h-4 w-4 mr-1" />
+                      <Expand className="h-4 w-4 mr-1" />
                       Expand
                     </>
                   )}
                 </Button>
               )}
+
+              <CopyButton
+                text={item.content}
+                label="Copy Content"
+                variant="outline"
+                size="sm"
+              />
             </div>
           </div>
 
