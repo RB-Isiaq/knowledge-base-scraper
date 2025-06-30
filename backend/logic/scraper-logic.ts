@@ -207,7 +207,7 @@ export async function scrapeBulkUrls(
   };
 }
 
-export async function processPDF(
+export async function processPdf(
   pdfBuffer: Buffer,
   filename: string,
   teamId: string,
@@ -215,7 +215,7 @@ export async function processPDF(
 ): Promise<ScrapedData> {
   try {
     console.log(`📚 Processing PDF: ${filename}`);
-    
+
     // Add timeout to PDF parsing
     const parsePromise = pdf(pdfBuffer, {
       // Optimize for Vercel's constraints

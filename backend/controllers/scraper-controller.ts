@@ -67,64 +67,22 @@ export class ScraperController {
       const { team_id, user_id } = req.body;
       const pdfFile = req.files!.pdf as fileUpload.UploadedFile;
 
-      logger.info(
-        `Processing PDF: ${pdfFile.name} (${(
-          pdfFile.size /
-          1024 /
-          1024
-        ).toFixed(2)}MB)`
-      );
+      logger.info(`Processing PDF: ${pdfFile.name}`);
 
-      // Add timeout wrapper for Vercel
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => {
-          reject(new Error("PDF processing timeout after 50 seconds"));
-        }, 50000); // 50 seconds to leave buffer for Vercel's 60s limit
-      });
-
-      const processingPromise = this.scraperService.processPdf(
+      const result = await this.scraperService.processPdf(
         pdfFile.data,
         pdfFile.name,
         team_id,
         user_id
       );
 
-      const result = await Promise.race([processingPromise, timeoutPromise]);
-
       logger.info(
-        `PDF processing completed. Found ${
-          (result as any).items.length
-        } sections`
+        `PDF processing completed. Found ${result.items.length} sections`
       );
 
       res.json(result);
     } catch (error) {
       logger.error("PDF processing error:", error);
-
-      if (error instanceof Error) {
-        if (error.message.includes("timeout")) {
-          res.status(408).json({
-            error: "Processing timeout",
-            message:
-              "PDF processing took too long. Try a smaller or simpler PDF.",
-            details: "Vercel functions have a 60-second timeout limit.",
-          });
-          return;
-        }
-
-        if (
-          error.message.includes("File too large") ||
-          error.message.includes("413")
-        ) {
-          res.status(413).json({
-            error: "File too large",
-            message: "PDF file exceeds the size limit.",
-            details: "Maximum file size is 4.5MB on Vercel Hobby plan.",
-          });
-          return;
-        }
-      }
-
       next(error);
     }
   }
